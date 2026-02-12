@@ -1,0 +1,2886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Del Campo al Plato - La Ruta Invisible de la Carne</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER CON SCORING */
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .score-section {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .score-display:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .score-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: right;
+            color: #4ade80;
+        }
+
+        .score-value.critical {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #fbbf24);
+            transition: width 0.5s ease;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* PANTALLA */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* PANTALLA INTRODUCCIÓN */
+        .intro-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            gap: 40px;
+        }
+
+        .intro-content {
+            text-align: center;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .intro-title {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .intro-subtitle {
+            font-size: 24px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .intro-description {
+            font-size: 18px;
+            max-width: 600px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        /* PANTALLA GRANJA */
+        .farm-screen {
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #90EE90 100%);
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .screen-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .farm-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+        }
+
+        .farm-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .farm-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .cows-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            min-height: 200px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .cow {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            font-size: 28px;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            border: 3px solid white;
+        }
+
+        .cow:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .cow.dragging {
+            opacity: 0.6;
+            cursor: grabbing;
+        }
+
+        .cow-id {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .registration-zone {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            border: 3px dashed #9333ea;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .registration-zone.drag-over {
+            background: linear-gradient(135deg, #c4b5fd 0%, #e9d5ff 100%);
+            border-color: #7c3aed;
+            transform: scale(1.02);
+        }
+
+        .zone-label {
+            font-size: 18px;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .registered-cows {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .registered-cow {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
+        }
+
+        .timer {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        /* PANTALLA TRANSPORTE */
+        .transport-screen {
+            background: linear-gradient(180deg, #f3e8ff 0%, #fce7f3 50%, #ffe4e6 100%);
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .phase-indicator {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 20px;
+        }
+
+        .observation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .card-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .card-stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .decision-area {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .transport-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .transport-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+        }
+
+        .item:hover {
+            transform: scale(1.02);
+        }
+
+        .item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .route-item {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        }
+
+        .drop-zone {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 3px dashed #3b82f6;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .drop-zone.drag-over {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            border-color: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        .drop-zone.occupied {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .item-in-zone {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        /* PANTALLA PROCESAMIENTO */
+        .processing-screen {
+            background: linear-gradient(180deg, #fef3c7 0%, #fed7aa 50%, #fecaca 100%);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .conveyor {
+            background: linear-gradient(90deg, #444 0%, #666 50%, #444 100%);
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conveyor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                rgba(255, 255, 255, 0.05) 20px,
+                rgba(255, 255, 255, 0.05) 40px
+            );
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(40px); }
+        }
+
+        .processing-items {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .processing-item {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 3px solid white;
+            position: relative;
+        }
+
+        .processing-item:hover {
+            transform: scale(1.1);
+        }
+
+        .processing-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .processing-item-id {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .containers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 120px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .container.drag-over {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #ffe4e6 0%, #fecaca 100%);
+        }
+
+        .container-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .container-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .container-item {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* PANTALLA DISTRIBUCIÓN */
+        .distribution-screen {
+            background: linear-gradient(180deg, #e0e7ff 0%, #f3e8ff 50%, #fce7f3 100%);
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .distribution-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .city-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .demand-info {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .drop-target {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px dashed #3b82f6;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .drop-target.drag-over {
+            border-color: #1d4ed8;
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+        }
+
+        .drop-target.has-items {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+
+        .target-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .target-item {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* PANTALLA PUNTO DE VENTA */
+        .retail-screen {
+            background: linear-gradient(180deg, #dbeafe 0%, #e0f2fe 50%, #f0f9ff 100%);
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .shelf-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .shelf {
+            display: flex;
+            gap: 15px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e5e7eb;
+            min-height: 120px;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+
+        .shelf.drag-over {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .shelf-slot {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px dashed #3b82f6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .shelf-slot.occupied {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .qr-zone {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .qr-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .qr-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 78, 216, 0.4);
+        }
+
+        .qr-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* PANTALLA RESULTADO */
+        .result-screen {
+            background: linear-gradient(180deg, #f0fdf4 0%, #e0f2fe 50%, #f3e8ff 100%);
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .result-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .result-score-large {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-percentage {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-message {
+            font-size: 24px;
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-submessage {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .timeline {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .timeline-icon {
+            font-size: 32px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-stage {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .errors-section {
+            background: linear-gradient(135deg, #ffe4e6 0%, #fecaca 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .errors-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+
+        .error-item {
+            font-size: 13px;
+            color: #991b1b;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .error-item:last-child {
+            border-bottom: none;
+        }
+
+        .error-penalty {
+            float: right;
+            font-weight: 600;
+            color: #dc2626;
+        }
+
+        .errors-section.no-errors {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .errors-section.no-errors .errors-title {
+            color: #059669;
+        }
+
+        .errors-section.no-errors .error-item {
+            color: #047857;
+        }
+
+        .final-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 15px 40px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        /* PANEL DE FEEDBACK DE FASE */
+        .phase-feedback-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .phase-feedback-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            animation: slideUp 0.4s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-icon {
+            font-size: 48px;
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .feedback-score {
+            font-size: 28px;
+            font-weight: 900;
+            color: #667eea;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .feedback-message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .feedback-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-item.positive {
+            background: #d1fae5;
+            color: #047857;
+            border-left: 3px solid #10b981;
+        }
+
+        .feedback-item.negative {
+            background: #ffe4e6;
+            color: #991b1b;
+            border-left: 3px solid #ef4444;
+        }
+
+        .feedback-item.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .feedback-btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .time-warning {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            animation: pulse 1s infinite;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .time-warning.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        /* ANIMACIONES */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .score-section {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .farm-container {
+                grid-template-columns: 1fr;
+            }
+
+            .transport-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-title {
+                font-size: 36px;
+            }
+
+            .distribution-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-percentage {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🐄 Del Campo al Plato</h1>
+            <div class="score-section">
+                <div class="score-display">
+                    <span class="score-label">Trazabilidad</span>
+                    <span class="score-value" id="scoreValue">100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- PANTALLA INTRODUCCIÓN -->
+            <div class="screen intro-screen active" id="introScreen">
+                <div class="intro-content">
+                    <h1 class="intro-title">Del Campo al Plato</h1>
+                    <p class="intro-subtitle">La Ruta Invisible de la Carne</p>
+                    <p class="intro-description">
+                        Gestiona el recorrido completo de un producto cárnico desde la granja hasta el consumidor final.
+                        Cada decisión impacta la trazabilidad. Demuestra tu capacidad para mantener la calidad
+                        y la transparencia en cada paso del camino.
+                    </p>
+                </div>
+                <button class="btn-primary" onclick="app.startGame()">Iniciar Experiencia</button>
+            </div>
+
+            <!-- PANTALLA INTRODUCCIÓN A FASES -->
+            <div class="screen intro-screen" id="introPhaseScreen" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 40px; border-radius: 20px; max-width: 600px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div id="introPhaseIcon" style="font-size: 80px; margin-bottom: 20px;">🚜</div>
+                    <h2 id="introPhaseTitle" style="color: #333; font-size: 32px; margin-bottom: 15px; font-weight: 700;">Fase 1: La Granja</h2>
+                    <p id="introPhaseSubtitle" style="color: #666; font-size: 16px; margin-bottom: 30px; line-height: 1.6;">
+                        En la granja, todo comienza. Aquí verificamos y registramos cada animal para asegurar que solo carne de calidad inicia su viaje.
+                    </p>
+                    <div id="introPhaseDetails" style="background: #f0f4f8; padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: left; font-size: 14px; color: #555; line-height: 1.8;">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <button class="btn-primary" onclick="app.startPhase()" style="padding: 12px 40px; font-size: 16px;">Comenzar Fase →</button>
+                </div>
+            </div>
+
+            <!-- PANTALLA GRANJA -->
+            <div class="screen farm-screen" id="farmScreen">
+                <h2 class="screen-title">🚜 Fase 1: Origen - La Granja</h2>
+                <div class="phase-indicator">🎯 Memoriza y registra las características de cada vaca (40 segundos)</div>
+                
+                <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #0c4a6e;">
+                    <strong>📋 Instrucciones:</strong><br>
+                    1️⃣ Arrastra cada vaca a la "Estación de Registro"<br>
+                    2️⃣ Memoriza sus características (peso, salud, código)<br>
+                    3️⃣ El sistema registrará automáticamente cada vaca<br>
+                    4️⃣ Completa todas las vacas antes que termine el tiempo
+                </div>
+
+                <div class="farm-container">
+                    <div class="farm-section">
+                        <h3 class="farm-title">Vacas Disponibles</h3>
+                        <div class="cows-container" id="cowsContainer">
+                            <!-- Se generan dinámicamente -->
+                        </div>
+                    </div>
+                    <div class="farm-section">
+                        <h3 class="farm-title">📋 Estación de Registro</h3>
+                        <div class="registration-zone" id="registrationZone">
+                            <div class="zone-label">Arrastra las vacas aquí</div>
+                            <div class="registered-cows" id="registeredCows"></div>
+                        </div>
+                        <div style="margin-top: 20px; display: none;" id="farmFormContainer">
+                            <div class="form-group">
+                                <label>💪 Peso (kg)</label>
+                                <input type="number" id="cowWeight" min="300" max="700" placeholder="300-700">
+                            </div>
+                            <div class="form-group">
+                                <label>📍 Lugar de Procedencia</label>
+                                <select id="cowOrigin">
+                                    <option value="">Seleccionar</option>
+                                    <option value="Campo Norte">Campo Norte</option>
+                                    <option value="Planta Central">Planta Central</option>
+                                    <option value="Finca de Pepito">Finca de Pepito</option>
+                                    <option value="Rancho El Toro">Rancho El Toro</option>
+                                    <option value="Pradera Sur">Pradera Sur</option>
+                                    <option value="Estancia Gómez">Estancia Gómez</option>
+                                    <option value="Hacienda Verde">Hacienda Verde</option>
+                                    <option value="Campo Abierto">Campo Abierto</option>
+                                </select>
+                            </div>
+                            <button class="btn-secondary" onclick="app.registerCurrentCow()">Registrar Vaca</button>
+                        </div>
+                    </div>
+                </div>
+                        <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-primary" onclick="app.proceedFarm()" style="display: inline-block;" id="proceedFarmBtn">
+                        Proceder al Transporte →
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODAL DE FEEDBACK -->
+            <div class="phase-feedback-modal" id="feedbackModal" style="display: none;">
+                <div class="phase-feedback-content">
+                    <div class="feedback-header">
+                        <div class="feedback-icon" id="feedbackIcon">✓</div>
+                        <div>
+                            <div class="feedback-title" id="feedbackTitle">Fase Completada</div>
+                            <div class="feedback-score" id="feedbackScore">+0%</div>
+                        </div>
+                    </div>
+                    <div class="feedback-message" id="feedbackMessage"></div>
+                    <div class="feedback-items" id="feedbackItems"></div>
+                    <div class="feedback-btn-container">
+                        <button class="btn-continue" onclick="app.closeFeedbackAndContinue()">Continuar →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA TRANSPORTE - OBSERVACIÓN -->
+            <div class="screen transport-screen" id="transportObservationScreen">
+                <h2 class="screen-title">🚚 Fase 2: Transporte - Observación</h2>
+                <div class="phase-indicator">Fase 1/2: Observa por 70 segundos</div>
+                
+                <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #92400e;">
+                    <strong>📋 Instrucciones:</strong><br>
+                    1️⃣ Analiza las 5 rutas disponibles (distancia, clima, estado de carreteras)<br>
+                    2️⃣ Analiza los 3 camiones disponibles (capacidad, refrigeración, sensores)<br>
+                    3️⃣ Memoriza esta información<br>
+                    4️⃣ En la siguiente pantalla asignarás camiones a rutas
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div class="timer" id="observationTimer">70s</div>
+                </div>
+
+                <h3 style="color: #333; margin: 20px 0 15px 0; font-weight: 600;">📍 Rutas Disponibles</h3>
+                <div class="observation-grid" id="routesObservation">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+                <h3 style="color: #333; margin: 30px 0 15px 0; font-weight: 600;">🚛 Camiones Disponibles</h3>
+                <div class="observation-grid" id="trucksObservation">
+                    <!-- Se generan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- PANTALLA TRANSPORTE - DECISIÓN -->
+            <div class="screen transport-screen" id="transportDecisionScreen">
+                <h2 class="screen-title">🚚 Fase 2: Transporte - Decisión</h2>
+                <div class="phase-indicator">Fase 2/2: Asigna camiones a rutas</div>
+
+                <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #92400e;">
+                    <strong>📋 Instrucciones:</strong><br>
+                    1️⃣ Hay <strong>5 RUTAS</strong> y solo <strong>3 CAMIONES</strong><br>
+                    2️⃣ Arrastra cada camión a la ruta que prefieras<br>
+                    3️⃣ Considera: distancia, clima y capacidad del camión<br>
+                    4️⃣ Los camiones con ❄️ refrigeración mantienen la carne fresca<br>
+                    5️⃣ Algunos camiones pueden servir múltiples rutas
+                </div>
+
+                <div class="decision-area">
+                    <h3 style="margin-bottom: 20px; color: #333;">Asigna Camiones a Rutas</h3>
+                    <div class="transport-grid">
+                        <div class="transport-column">
+                            <h4 class="column-title">🚛 Camiones</h4>
+                            <div class="items-container" id="trucksDecision">
+                                <!-- Se generan dinámicamente -->
+                            </div>
+                        </div>
+                        <div class="transport-column">
+                            <h4 class="column-title">📍 Rutas</h4>
+                            <div class="items-container" id="routesDecision">
+                                <!-- Se generan dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn-primary" onclick="app.proceedTransport()">
+                        Proceder al Procesamiento →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANTALLA PROCESAMIENTO -->
+            <div class="screen processing-screen" id="processingScreen">
+                <h2 class="screen-title">🏭 Fase 3: Planta de Procesamiento</h2>
+                <div class="phase-indicator">Rapidez y Precisión: Clasifica los productos por tipo</div>
+
+                <div style="background: #dbeafe; border-left: 4px solid #0284c7; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #0c4a6e;">
+                    <strong>📋 Instrucciones - Clasificación por SKU:</strong><br>
+                    🔴 <strong>Lote 1 (Carne Molida):</strong> Productos que terminan en <strong style="color: #dc2626;">-M</strong><br>
+                    🟠 <strong>Lote 2 (Carne Gruesa):</strong> Productos que terminan en <strong style="color: #ea580c;">-G</strong><br>
+                    🟡 <strong>Lote 3 (Filetes):</strong> Productos que terminan en <strong style="color: #eab308;">-S</strong><br>
+                    ⏱️ <strong>Tiempo límite por producto:</strong> Mira el color - pasa a rojo = crítico<br>
+                    <br>
+                    ⚠️ <strong>Importante:</strong> <span style="color: #10b981;">✓ Verde = Vaca Registrada</span> | <span style="color: #ef4444;">❌ Rojo = NO REGISTRADA (imposible categorizar correctamente)</span>
+                </div>
+
+                <div class="conveyor">
+                    <div class="processing-items" id="processingItems">
+                        <!-- Se generan dinámicamente -->
+                    </div>
+                </div>
+
+                <h3 style="color: #333; margin: 30px 0 15px 0; font-weight: 600;">📦 Contenedores por Lote</h3>
+                <div class="containers" id="containersProcessing">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-primary" onclick="app.proceedProcessing()">
+                        Proceder a Distribución →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANTALLA DISTRIBUCIÓN - OBSERVACIÓN -->
+            <div class="screen distribution-screen" id="distributionObservationScreen">
+                <h2 class="screen-title">📦 Fase 4: Distribución - Observación</h2>
+                <div class="phase-indicator">Fase 1/2: Observa por 6 segundos</div>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div class="timer" id="distributionObservationTimer">6s</div>
+                </div>
+
+                <div class="distribution-grid" id="distributionObservationCards">
+                    <!-- Se generan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- PANTALLA DISTRIBUCIÓN - DECISIÓN -->
+            <div class="screen distribution-screen" id="distributionDecisionScreen">
+                <h2 class="screen-title">📦 Fase 4: Distribución - Decisión</h2>
+                <div class="phase-indicator">Fase 2/2: Distribuye los productos a los centros</div>
+
+                <div style="background: #dbeafe; border-left: 4px solid #0284c7; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #0c4a6e;">
+                    <strong>📋 Instrucciones:</strong><br>
+                    1️⃣ Cada centro tiene demanda (kg) y características de refrigeración<br>
+                    2️⃣ 🌡️ <strong>Temperatura:</strong> -20°C (mejor) a -12°C (crítico)<br>
+                    3️⃣ 🔋 <strong>Respaldo:</strong> Los centros con respaldo son más seguros<br>
+                    4️⃣ Arrastra productos a los centros que elijas<br>
+                    5️⃣ Distribuye al menos 80% de los productos
+                </div>
+
+                <div class="distribution-grid" id="distributionCards">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-primary" onclick="app.proceedDistribution()">
+                        Proceder al Punto de Venta →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANTALLA PUNTO DE VENTA -->
+            <div class="screen retail-screen" id="retailScreen">
+                <h2 class="screen-title">🛒 Fase 5: Punto de Venta - Estantería y Trazabilidad</h2>
+                <div class="phase-indicator">Última verificación antes de llegar al cliente</div>
+
+                <div style="background: #dcfce7; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; color: #15803d;">
+                    <strong>📋 Instrucciones:</strong><br>
+                    1️⃣ Cada estante tiene características diferentes (temperatura, tipo)<br>
+                    2️⃣ 🌡️ <strong>Premium (Controlada):</strong> Para productos de alta calidad | 🌡️ <strong>Estándar (Ambiente):</strong> Productos normales | ❄️ <strong>Frío (Refrigerado):</strong> Requiere mantener cadena de frío<br>
+                    3️⃣ 📱 <strong>QR Requerido:</strong> Algunos estantes necesitan código QR para trazabilidad<br>
+                    4️⃣ Arrastra productos a estantes apropiados<br>
+                    5️⃣ <strong>Escanea QR UNA SOLA VEZ</strong> para verificar trazabilidad de todos los productos en estantes que lo requieren
+                </div>
+
+                <div class="shelf-section">
+                    <h3 class="farm-title">🥩 Ubicar Productos en Estantería</h3>
+                    <div class="shelf" id="shelf">
+                        <!-- Se generan slots dinámicamente -->
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;" id="productsList">
+                        <!-- Se generan productos dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="qr-zone">
+                    <div class="qr-icon">📱</div>
+                    <h3 style="color: #333; margin-bottom: 15px; font-size: 18px; font-weight: 600;">Escanear QR de Trazabilidad</h3>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        El QR documenta el recorrido completo de la carne (granja → venta).<br>
+                        ⚠️ Solo escanea <strong>UNA SOLA VEZ</strong> por fase. Verifica todos los productos en estantes que requieren QR.
+                    </p>
+                    <button class="qr-button" id="qrButton" onclick="app.activateQR()">
+                        Escanear QR
+                    </button>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-primary" onclick="app.proceedRetail()">
+                        Ver Resultado Final →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANTALLA RESULTADO -->
+            <div class="screen result-screen" id="resultScreen">
+                <div class="result-container">
+                    <div class="result-score-large">
+                        <div class="result-percentage" id="resultPercentage">100%</div>
+                        <div class="result-message" id="resultMessage">¡Excelente Desempeño!</div>
+                        <div class="result-submessage" id="resultSubmessage">
+                            Mantuviste la trazabilidad perfecta en todo el proceso.
+                        </div>
+                    </div>
+
+                    <div class="timeline">
+                        <h3 class="timeline-title">📍 Línea de Tiempo del Producto</h3>
+                        <div id="resultTimeline">
+                            <!-- Se genera dinámicamente -->
+                        </div>
+                    </div>
+
+                    <div class="final-actions">
+                        <button class="btn-large btn-restart" onclick="app.restart()">
+                            🔄 Jugar de Nuevo
+                        </button>
+                        <button class="btn-large btn-share" onclick="app.shareResult()">
+                            📊 Compartir Resultado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            currentScore: 100,
+            currentScreen: 'intro',
+            cows: [],
+            registeredCows: [],
+            currentCowId: null,
+            routes: [],
+            trucks: [],
+            assignments: {},
+            processingItems: [],
+            containers: {},
+            cities: [],
+            distributionAssignments: {},
+            retailShelfItems: {},
+            qrActivated: false,
+            gameHistory: [],
+            errors: [],
+            // Mejoras: farm transcription 40s
+            farmTimeLimit: 40, // 40 segundos para registrar vacas
+            farmTimeRemaining: 40,
+            farmTimerInterval: null,
+            nextScreenCallback: null,
+
+            init() {
+                this.setupDragAndDrop();
+                this.setToday();
+            },
+
+            setToday() {
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = document.getElementById('cowDate');
+                if (dateInput) {
+                    dateInput.value = today;
+                }
+            },
+
+            startGame() {
+                this.currentScore = 100;
+                this.errors = [];
+                this.gameHistory = [];
+                this.registeredCows = [];
+                this.assignments = {};
+                this.containers = {};
+                this.distributionAssignments = {};
+                this.retailShelfItems = {};
+                this.qrActivated = false;
+                this.currentPhase = 'farm';
+                this.showPhaseIntro();
+            },
+
+            showPhaseIntro() {
+                const phases = {
+                    farm: {
+                        icon: '🚜',
+                        title: 'Fase 1: Origen - La Granja',
+                        description: 'En la granja, todo comienza. Aquí verificamos y registramos cada animal para asegurar que solo carne de calidad inicia su viaje.',
+                        details: `
+                            <strong>¿Qué sucede aquí en la vida real?</strong><br>
+                            Los ganaderos registran a cada animal con datos clave: peso y procedencia. Esta información es el punto de partida de la trazabilidad completa.<br><br>
+                            <strong>Tu responsabilidad:</strong><br>
+                            • Memoriza las características de cada vaca en 40 segundos<br>
+                            • Arrastra cada vaca a la estación de registro<br>
+                            • Ingresa el peso y lugar de procedencia<br>
+                            • Las vacas no registradas afectarán la trazabilidad posterior
+                        `
+                    },
+                    transport: {
+                        icon: '🚚',
+                        title: 'Fase 2: Transporte - Logística',
+                        description: 'El transporte es crítico para mantener la cadena de frío. La elección correcta de camiones y rutas determina la calidad del producto.',
+                        details: `
+                            <strong>¿Qué sucede aquí en la vida real?</strong><br>
+                            Los operadores logísticos asignan camiones refrigerados según las condiciones climáticas y la distancia. Un error puede arruinar toda la carga.<br><br>
+                            <strong>Tu responsabilidad:</strong><br>
+                            • Observa 5 rutas diferentes y 3 camiones disponibles<br>
+                            • Considera: clima, distancia y capacidad de refrigeración<br>
+                            • Asigna estratégicamente (3 camiones para 5 rutas)<br>
+                            • Evita camiones sin refrigeración en clima lluvioso
+                        `
+                    },
+                    processing: {
+                        icon: '🏭',
+                        title: 'Fase 3: Procesamiento - Clasificación',
+                        description: 'En la planta, la carne se clasifica por tipo y calidad. La precisión es vital para mantener los estándares de comercialización.',
+                        details: `
+                            <strong>¿Qué sucede aquí en la vida real?</strong><br>
+                            Los operarios clasifican cada pieza según su SKU (terminación -M, -G, -S). Las vacas registradas generan SKUs confiables; las no registradas son un riesgo.<br><br>
+                            <strong>Tu responsabilidad:</strong><br>
+                            • Clasifica productos en 3 lotes según el SKU<br>
+                            • Ojo a los indicadores: verde = registrado, rojo = no registrado<br>
+                            • Arrastra los productos a los lotes correctos antes que expire el tiempo<br>
+                            • Los items no clasificados se pierden (penalización)
+                        `
+                    },
+                    distribution: {
+                        icon: '📦',
+                        title: 'Fase 4: Distribución - Refrigeración',
+                        description: 'Los productos clasificados se distribuyen a centros refrigerados estratégicamente ubicados. La temperatura es todo.',
+                        details: `
+                            <strong>¿Qué sucede aquí en la vida real?</strong><br>
+                            Los distribuidores eligen centros según demanda, temperatura disponible y sistemas de respaldo. Un centro crítico puede perder toda una remesa.<br><br>
+                            <strong>Tu responsabilidad:</strong><br>
+                            • Analiza 6 centros con diferentes temperaturas y respaldos<br>
+                            • Cada producto se entrega solo ONCE (no puede ir a varios centros)<br>
+                            • Distribuye al menos 80% de los productos<br>
+                            • Considera temperaturas: -20°C (ideal) vs -12°C (crítico)
+                        `
+                    },
+                    retail: {
+                        icon: '🛒',
+                        title: 'Fase 5: Punto de Venta - Trazabilidad Final',
+                        description: 'El cliente final compra el producto. Aquí la trazabilidad se cierra con códigos QR que garantizan la transparencia.',
+                        details: `
+                            <strong>¿Qué sucede aquí en la vida real?</strong><br>
+                            En el supermercado, los productos se colocan en estantes específicos con etiquetado de temperatura. El QR permite al consumidor verificar toda la historia del producto.<br><br>
+                            <strong>Tu responsabilidad:</strong><br>
+                            • Ubica productos en estantes según tipo (Premium, Estándar, Frío)<br>
+                            • Los estantes requieren QR para garantizar trazabilidad<br>
+                            • Escanea QR UNA SOLA VEZ para validar trazabilidad<br>
+                            • El cliente confía en ti: cada paso cuenta
+                        `
+                    }
+                };
+
+                const phaseData = phases[this.currentPhase];
+                document.getElementById('introPhaseIcon').textContent = phaseData.icon;
+                document.getElementById('introPhaseTitle').textContent = phaseData.title;
+                document.getElementById('introPhaseSubtitle').textContent = phaseData.description;
+                document.getElementById('introPhaseDetails').innerHTML = phaseData.details;
+
+                this.goToScreen('introPhaseScreen');
+            },
+
+            startPhase() {
+                if (this.currentPhase === 'farm') {
+                    this.setupFarmScreen();
+                    this.goToScreen('farmScreen');
+                } else if (this.currentPhase === 'transport') {
+                    this.setupTransportObservation();
+                    this.goToScreen('transportObservationScreen');
+                } else if (this.currentPhase === 'processing') {
+                    this.setupProcessingScreen();
+                    this.goToScreen('processingScreen');
+                } else if (this.currentPhase === 'distribution') {
+                    this.setupDistributionObservation();
+                    this.goToScreen('distributionObservationScreen');
+                } else if (this.currentPhase === 'retail') {
+                    this.setupRetailScreen();
+                    this.goToScreen('retailScreen');
+                }
+            },
+
+            // --- FASE 1: GRANJA (Transcripción cognitiva) ---
+            setupFarmScreen() {
+                // Generar vacas con datos que deben ser memorizados
+                const originOptions = ['Campo Norte', 'Planta Central', 'Finca de Pepito', 'Rancho El Toro', 'Pradera Sur', 'Estancia Gómez', 'Hacienda Verde', 'Campo Abierto'];
+                this.cows = Array.from({length: 8}, (_, i) => {
+                    // Randomizar atributos de manera simple
+                    const weight = 300 + Math.floor(Math.random() * 300); // 300-599
+                    const origin = originOptions[Math.floor(Math.random() * originOptions.length)];
+                    const code = `COW-${String(i + 1).padStart(3, '0')}`;
+                    return { id: code, registered: false, data: { code, weight, origin } };
+                });
+
+                const container = document.getElementById('cowsContainer');
+                container.innerHTML = '';
+                this.cows.forEach(cow => {
+                    const div = document.createElement('div');
+                    div.className = 'cow';
+                    div.draggable = true;
+                    div.innerHTML = '🐄';
+                    div.dataset.cowId = cow.id;
+                    // Cuando se inicia la selección/arrastre mostramos la info temporal
+                    div.addEventListener('dragstart', (e) => this.handleCowSelect(e, cow.id));
+                    // Al terminar drag (si no se droppea) ocultar info
+                    div.addEventListener('dragend', (e) => this.hideCowInfo());
+                    container.appendChild(div);
+                });
+
+                // Setup zona de registro para transcribir manualmente
+                const regZone = document.getElementById('registrationZone');
+                regZone.addEventListener('dragover', (e) => this.handleDragOver(e));
+                regZone.addEventListener('drop', (e) => this.handleDropOnRegistration(e));
+                regZone.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+
+                // Asegurar formulario vacío
+                document.getElementById('farmFormContainer').style.display = 'none';
+
+                // Iniciar temporizador de granja (40s)
+                this.startFarmTimer();
+            },
+
+            // Mostrar información temporal de la vaca mientras está seleccionada
+            handleCowSelect(e, cowId) {
+                // usamos drag data para mantener compatibilidad con drop
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('type', 'cow');
+                e.dataTransfer.setData('id', cowId);
+
+                const cow = this.cows.find(c => c.id === cowId);
+                if (!cow) return;
+
+                // Crear panel temporal con la información a memorizar
+                this.showTemporaryCowInfo(cow.data);
+                if (e.target.classList) e.target.classList.add('dragging');
+            },
+
+            // Genéricos de DnD (asegurar compatibilidad entre elementos)
+            handleDragStart(e, type, id) {
+                e.dataTransfer.effectAllowed = 'move';
+                try {
+                    e.dataTransfer.setData('type', type);
+                    e.dataTransfer.setData('id', id);
+                } catch (ex) {
+                    // algunos navegadores requieren tipos estándar
+                }
+                try { e.dataTransfer.setData('text/plain', id); } catch (ex) {}
+                if (e.target && e.target.classList) e.target.classList.add('dragging');
+            },
+
+            handleDragOver(e) {
+                e.preventDefault();
+                try { e.dataTransfer.dropEffect = 'move'; } catch (ex) {}
+                const zone = e.currentTarget;
+                if (zone && zone.classList) zone.classList.add('drag-over');
+            },
+
+            handleDragLeave(e) {
+                const zone = e.currentTarget;
+                if (zone && zone.classList) zone.classList.remove('drag-over');
+            },
+
+            showTemporaryCowInfo(data) {
+                this.hideCowInfo();
+                const panel = document.createElement('div');
+                panel.id = 'tempCowInfo';
+                panel.style.position = 'fixed';
+                panel.style.top = '80px';
+                panel.style.right = '20px';
+                panel.style.background = 'white';
+                panel.style.padding = '12px 16px';
+                panel.style.borderRadius = '10px';
+                panel.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+                panel.style.zIndex = 999;
+                panel.innerHTML = `
+                    <div style="font-weight:700; margin-bottom:6px; color: #333;">📋 Memoriza estos datos</div>
+                    <div><strong>💪 Peso:</strong> ${data.weight} kg</div>
+                    <div><strong>📍 Procedencia:</strong> ${data.origin}</div>
+                `;
+                document.body.appendChild(panel);
+            },
+
+            hideCowInfo() {
+                const existing = document.getElementById('tempCowInfo');
+                if (existing) existing.remove();
+            },
+
+            startFarmTimer() {
+                // Reiniciar contador
+                this.farmTimeRemaining = this.farmTimeLimit;
+                if (this.farmTimerInterval) clearInterval(this.farmTimerInterval);
+
+                this.farmTimerInterval = setInterval(() => {
+                    this.farmTimeRemaining--;
+
+                    let timeWarning = document.getElementById('farmTimeWarning');
+                    if (!timeWarning) {
+                        timeWarning = document.createElement('div');
+                        timeWarning.id = 'farmTimeWarning';
+                        timeWarning.className = 'time-warning';
+                        document.body.appendChild(timeWarning);
+                    }
+
+                    timeWarning.textContent = `⏱️ Tiempo: ${this.farmTimeRemaining}s`;
+                    if (this.farmTimeRemaining <= 10) timeWarning.classList.add('warning');
+
+                    if (this.farmTimeRemaining <= 0) {
+                        clearInterval(this.farmTimerInterval);
+                        this.endFarmPhase();
+                    }
+                }, 1000);
+            },
+
+            endFarmPhase() {
+                this.hideCowInfo();
+                const timeWarning = document.getElementById('farmTimeWarning');
+                if (timeWarning) timeWarning.remove();
+                // Forzar fin de fase y evaluar vacas no registradas
+                this.proceedFarm();
+            },
+
+            // Al soltar en la estación mostramos el formulario para transcripción manual
+            handleDropOnRegistration(e) {
+                e.preventDefault();
+                // No permitir dejar vacas si el tiempo ya terminó
+                if (this.farmTimeRemaining <= 0) {
+                    alert('El tiempo de registro ha terminado. No puedes dejar vacas en la estación.');
+                    return;
+                }
+                const zone = e.currentTarget;
+                this.hideCowInfo();
+                zone.classList.remove('drag-over');
+
+                const type = e.dataTransfer.getData('type');
+                const id = e.dataTransfer.getData('id');
+
+                if (type === 'cow') {
+                    this.currentCowId = id;
+                    // mostrar formulario vacío para que el usuario registre datos
+                    const formContainer = document.getElementById('farmFormContainer');
+                    formContainer.style.display = 'block';
+                    // Limpiar campos
+                    document.getElementById('cowWeight').value = '';
+                    document.getElementById('cowOrigin').value = '';
+                    // Enfocar peso
+                    document.getElementById('cowWeight').focus();
+                }
+            },
+
+            // Registro: comparar transcripción con datos reales
+            registerCurrentCow() {
+                // No se permite registrar si el tiempo ya expiró
+                if (this.farmTimeRemaining <= 0) {
+                    alert('El tiempo de registro ha terminado. No se pueden registrar más vacas.');
+                    document.getElementById('farmFormContainer').style.display = 'none';
+                    this.currentCowId = null;
+                    return;
+                }
+
+                const weightTyped = document.getElementById('cowWeight').value.trim();
+                const originTyped = document.getElementById('cowOrigin').value;
+
+                if (!weightTyped || !originTyped) {
+                    alert('⚠️ Completa AMBOS campos antes de registrar:\n💪 Peso (kg)\n📍 Lugar de Procedencia');
+                    return;
+                }
+
+                const cowId = this.currentCowId;
+                const cow = this.cows.find(c => c.id === cowId);
+                if (!cow) return;
+
+                // Registrar con los datos introducidos
+                cow.registered = true;
+                cow.data.transcribed = { weight: weightTyped, origin: originTyped };
+                this.registeredCows.push(cow.id);
+
+                this.gameHistory.push({ 
+                    stage: 'farm', 
+                    action: `Registered ${cowId}`, 
+                    data: { 
+                        original: cow.data, 
+                        transcribed: cow.data.transcribed 
+                    } 
+                });
+
+                // Mostrar badge con el id interno
+                const regContainer = document.getElementById('registeredCows');
+                const badge = document.createElement('div');
+                badge.className = 'registered-cow';
+                badge.innerHTML = `✓ ${cow.id} (${weightTyped}kg, ${originTyped})`;
+                regContainer.appendChild(badge);
+
+                const cowElement = document.querySelector(`[data-cow-id="${cowId}"]`);
+                if (cowElement) cowElement.style.opacity = '0.3';
+
+                document.getElementById('farmFormContainer').style.display = 'none';
+                document.getElementById('cowWeight').value = '';
+                document.getElementById('cowOrigin').value = '';
+                this.currentCowId = null;
+                
+                console.log(`[Farm] Vaca ${cowId} registrada: ${weightTyped}kg, Origen: ${originTyped}`);
+            },
+
+            proceedFarm() {
+                if (this.farmTimerInterval) clearInterval(this.farmTimerInterval);
+
+                // Vacas no registradas cuentan como pérdidas
+                const notRegistered = this.cows.filter(c => !c.registered);
+                const feedback = { stage: 'farm', registered: this.registeredCows.length, total: this.cows.length, unregistered: notRegistered.length, scoreChange: 0, items: [] };
+                if (notRegistered.length > 0) {
+                    // penalización por cada vaca no registrada
+                    const penalty = 10 * notRegistered.length;
+                    this.applyPenalty(penalty, `${notRegistered.length} vaca(s) sin registrar`);
+                    feedback.items.push({ type: 'negative', text: `❌ ${notRegistered.length} vaca(s) no registradas` });
+                } else {
+                    feedback.items.push({ type: 'positive', text: `✓ Todas las vacas fueron registradas (${this.registeredCows.length})` });
+                }
+
+                // Estadísticas
+                if (this.registeredCows.length > 0) {
+                    const avg = this.cows.filter(c => c.registered).reduce((s,c) => s + parseInt(c.data.weight),0)/this.registeredCows.length;
+                    feedback.items.push({ type: 'positive', text: `📊 Peso promedio: ${Math.round(avg)}kg` });
+                }
+
+                if (this.farmTimeRemaining > 0) feedback.items.push({ type: 'positive', text: `⏱️ Tiempo restante: ${this.farmTimeRemaining}s` });
+                else feedback.items.push({ type: 'warning', text: '⚠️ Tiempo agotado' });
+
+                this.showPhaseFeedback(feedback, () => {
+                    this.currentPhase = 'transport';
+                    this.showPhaseIntro();
+                });
+            },
+
+            showPhaseFeedback(feedback, onContinue) {
+                // Guardar callback para continuar
+                this.nextScreenCallback = onContinue;
+
+                const icon = feedback.items && feedback.items.some(i => i.type === 'negative') ? '⚠️' : '✓';
+                const title = feedback.stage === 'farm' ? '🚜 Granja - Análisis' : 'Fase Completada';
+
+                const iconEl = document.getElementById('feedbackIcon'); if (iconEl) iconEl.textContent = icon;
+                const titleEl = document.getElementById('feedbackTitle'); if (titleEl) titleEl.textContent = title;
+
+                const scoreEl = document.getElementById('feedbackScore');
+                if (scoreEl) {
+                    const scoreChangeText = feedback.scoreChange < 0 ? `${feedback.scoreChange}%` : `+${feedback.scoreChange}%`;
+                    scoreEl.textContent = scoreChangeText;
+                    scoreEl.style.color = feedback.scoreChange < 0 ? '#ef4444' : '#10b981';
+                }
+
+                const msgEl = document.getElementById('feedbackMessage');
+                if (msgEl) {
+                    let message = '';
+                    if (feedback.stage === 'farm') {
+                        if (feedback.unregistered === 0) message = `Registraste exitosamente ${feedback.registered} de ${feedback.total} vacas.`;
+                        else message = `Registraste ${feedback.registered} de ${feedback.total} vacas. ${feedback.unregistered} no fueron registradas.`;
+                    }
+                    msgEl.textContent = message;
+                }
+
+                const itemsContainer = document.getElementById('feedbackItems');
+                if (itemsContainer) {
+                    itemsContainer.innerHTML = (feedback.items || []).map(item => `
+                        <div class="feedback-item ${item.type}">${item.text}</div>
+                    `).join('');
+                }
+
+                const modal = document.getElementById('feedbackModal');
+                if (modal) modal.style.display = 'flex';
+            },
+
+            closeFeedbackAndContinue() {
+                const modal = document.getElementById('feedbackModal');
+                if (modal) modal.style.display = 'none';
+                if (this.nextScreenCallback) {
+                    try { this.nextScreenCallback(); } catch (e) { console.error(e); }
+                    this.nextScreenCallback = null;
+                }
+            },
+
+            // --- Transporte: aumentar observación a 120s y más rutas que camiones ---
+            setupTransportObservation() {
+                // 5 rutas / 3 camiones
+                this.routes = [
+                    {id: 'ROUTE-1', distance: '120km', climate: '☀️ Soleado', condition: 'Buena'},
+                    {id: 'ROUTE-2', distance: '210km', climate: '🌧️ Lluvioso', condition: 'Regular'},
+                    {id: 'ROUTE-3', distance: '95km', climate: '⛅ Variable', condition: 'Buena'},
+                    {id: 'ROUTE-4', distance: '320km', climate: '🌪️ Viento', condition: 'Mala'},
+                    {id: 'ROUTE-5', distance: '180km', climate: '☀️ Soleado', condition: 'Excelente'}
+                ];
+
+                this.trucks = [
+                    {id: 'TRUCK-1', capacity: '5000', refrigeration: true, sensors: true},
+                    {id: 'TRUCK-2', capacity: '3000', refrigeration: false, sensors: true},
+                    {id: 'TRUCK-3', capacity: '4000', refrigeration: true, sensors: false}
+                ];
+
+                const routesDiv = document.getElementById('routesObservation');
+                routesDiv.innerHTML = this.routes.map(r => `
+                    <div class="card">
+                        <div class="card-title">${r.id}</div>
+                        <div class="card-stat"><span class="stat-label">Distancia:</span><span class="stat-value">${r.distance}</span></div>
+                        <div class="card-stat"><span class="stat-label">Clima:</span><span class="stat-value">${r.climate}</span></div>
+                        <div class="card-stat"><span class="stat-label">Estado:</span><span class="stat-value">${r.condition}</span></div>
+                    </div>
+                `).join('');
+
+                const trucksDiv = document.getElementById('trucksObservation');
+                trucksDiv.innerHTML = this.trucks.map(t => `
+                    <div class="card">
+                        <div class="card-title">${t.id}</div>
+                        <div class="card-stat"><span class="stat-label">Capacidad:</span><span class="stat-value">${t.capacity}kg</span></div>
+                        <div class="card-stat"><span class="stat-label">Refrigeración:</span><span class="stat-value">${t.refrigeration ? '✓ Sí' : '✗ No'}</span></div>
+                        <div class="card-stat"><span class="stat-label">Sensores:</span><span class="stat-value">${t.sensors ? '✓ Sí' : '✗ No'}</span></div>
+                    </div>
+                `).join('');
+
+                // Observación: 70 segundos
+                this.startTimer(70, () => {
+                    this.setupTransportDecision();
+                    this.goToScreen('transportDecisionScreen');
+                }, 'observationTimer');
+            },
+
+            setupTransportDecision() {
+                const trucksDiv = document.getElementById('trucksDecision');
+                trucksDiv.innerHTML = this.trucks.map(t => `
+                    <div class="item" draggable="true" data-truck="${t.id}">
+                        🚛 ${t.id}
+                    </div>
+                `).join('');
+
+                const routesDiv = document.getElementById('routesDecision');
+                routesDiv.innerHTML = this.routes.map(r => `
+                    <div class="drop-zone" id="route-${r.id}" data-route="${r.id}">
+                        <div>${r.id}</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Asigna un camión (opcional)</div>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('#trucksDecision .item').forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        this.handleDragStart(e, 'truck', e.target.dataset.truck);
+                    });
+                });
+
+                document.querySelectorAll('#routesDecision .drop-zone').forEach(zone => {
+                    zone.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    zone.addEventListener('drop', (e) => this.handleDropAssignment(e, 'route'));
+                    zone.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                });
+            },
+
+            handleDropAssignment(e, type) {
+                e.preventDefault();
+                const zone = e.currentTarget;
+                zone.classList.remove('drag-over');
+
+                const truckId = e.dataTransfer.getData('id');
+                const routeId = zone.dataset.route;
+
+                // Permitir asignar varios routes a un mismo camión (estrategia)
+                this.assignments[routeId] = truckId;
+                zone.classList.add('occupied');
+                zone.innerHTML = `<div class="item-in-zone">${truckId}</div>`;
+
+                const item = document.querySelector(`[data-truck="${truckId}"]`);
+                if (item) item.style.opacity = '0.5';
+
+                this.gameHistory.push({ stage: 'transport', action: 'truck_assigned', data: { truck: truckId, route: routeId } });
+            },
+
+            proceedTransport() {
+                // No obligamos a asignar todas las rutas, pero evaluamos asignaciones hechas
+                const feedback = { stage: 'transport', assigned: Object.keys(this.assignments).length, scoreChange: 0, items: [] };
+
+                for (const [routeId, truckId] of Object.entries(this.assignments)) {
+                    const route = this.routes.find(r => r.id === routeId);
+                    const truck = this.trucks.find(t => t.id === truckId);
+
+                    if (!route || !truck) continue;
+
+                    // Penalización: clima malo + sin refrigeración
+                    if (route.climate.includes('🌧️') && !truck.refrigeration) {
+                        const penalty = 10;
+                        this.applyPenalty(penalty, `Ruta lluviosa (${routeId}) sin refrigeración en ${truckId}`);
+                        feedback.scoreChange -= penalty;
+                        feedback.items.push({ type: 'negative', text: `❌ ${truckId} sin refrigeración en ${routeId}` });
+                    } else {
+                        feedback.items.push({ type: 'positive', text: `✓ ${truckId} asignado a ${routeId}` });
+                    }
+
+                    // Comprobar sobrecarga frente a capacidad del camión (simple)
+                    const totalWeight = this.registeredCows.reduce((sum, code) => {
+                        // los registeredCows son códigos transcritos
+                        const cow = this.cows.find(c => c.data.code === code || c.id === code);
+                        return sum + (cow ? parseInt(cow.data.weight) : 0);
+                    }, 0);
+                    const capacity = parseInt(truck.capacity);
+                    if (totalWeight > capacity) {
+                        const penalty = 6;
+                        this.applyPenalty(penalty, `Camión ${truckId} sobrecargado`);
+                        feedback.scoreChange -= penalty;
+                        feedback.items.push({ type: 'warning', text: `⚠️ ${truckId} sobrecargado (${totalWeight}kg>${capacity}kg)` });
+                    }
+                }
+
+                // Rutas sin asignar aumentan complejidad estratégico, no penalizamos aquí directamente
+                this.showPhaseFeedback(feedback, () => {
+                    this.currentPhase = 'processing';
+                    this.showPhaseIntro();
+                });
+            },
+
+            // --- PLANTA: Clasificación por SKU y lotes ---
+            setupProcessingScreen() {
+                // Definir contenedores según terminación SKU
+                this.containers = { 'LOTE-1': [], 'LOTE-2': [], 'LOTE-3': [] };
+                this.processedProducts = []; // Array para guardar productos procesados correctamente
+
+                // Generar ítems para TODAS las vacas (registradas y no registradas)
+                const suffixes = ['M','G','S'];
+                this.processingItems = this.cows.map((cow, idx) => {
+                    const suffix = suffixes[Math.floor(Math.random()*suffixes.length)];
+                    const sku = `CAR-${100+idx}-${suffix}`;
+                    const fatLevels = ['Bajo','Medio','Alto'];
+                    const fat = fatLevels[Math.floor(Math.random()*fatLevels.length)];
+                    const typeOptions = ['Carne','Subproducto','Embutido'];
+                    const type = typeOptions[Math.floor(Math.random()*typeOptions.length)];
+                    const isRegistered = this.registeredCows.includes(cow.id);
+                    return { 
+                        id: `ITEM-${String(idx+1).padStart(3,'0')}`, 
+                        cowCode: cow.id,
+                        cowRegistered: isRegistered,
+                        sku, 
+                        type, 
+                        fat, 
+                        placed: false, 
+                        timeRemaining: 8 + Math.floor(Math.random()*6) 
+                    };
+                });
+
+                // Render items on the conveyor
+                const itemsDiv = document.getElementById('processingItems');
+                itemsDiv.innerHTML = this.processingItems.map(it => {
+                    const statusColor = it.cowRegistered ? '#10b981' : '#ef4444';
+                    const statusIcon = it.cowRegistered ? '✓' : '❌';
+                    const statusText = it.cowRegistered ? 'Registrada' : 'NO REGISTRADA';
+                    
+                    return `
+                    <div class="processing-item" draggable="true" data-item="${it.id}" style="border: 2px solid ${statusColor}; position: relative;">
+                        <div style="position: absolute; top: 2px; right: 2px; font-size: 10px; background: ${statusColor}; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;">${statusIcon}</div>
+                        <div style="text-align:center; font-size:11px; font-weight: bold;">${it.sku}</div>
+                        <div class="processing-item-id" style="font-size:10px;">${it.id}</div>
+                        <div style="text-align:center; font-size:9px; color: ${statusColor}; font-weight: bold; margin-top: 4px;">${it.cowCode}</div>
+                        <div style="text-align:center; font-size:8px; color: ${statusColor}; margin-top: 2px;">${statusText}</div>
+                    </div>
+                    `;
+                }).join('');
+
+                // Attach dragstart
+                document.querySelectorAll('.processing-item').forEach(el => el.addEventListener('dragstart', (e) => this.handleDragStart(e,'item', e.target.dataset.item)));
+
+                // Render containers with visual indicators
+                const containersDiv = document.getElementById('containersProcessing');
+                const containerConfigs = [
+                    { lote: 'LOTE-1', suffix: 'M', name: 'Carne Molida', color: '#dc2626', emoji: '🔴' },
+                    { lote: 'LOTE-2', suffix: 'G', name: 'Carne Gruesa', color: '#ea580c', emoji: '🟠' },
+                    { lote: 'LOTE-3', suffix: 'S', name: 'Filetes', color: '#eab308', emoji: '🟡' }
+                ];
+                
+                containersDiv.innerHTML = containerConfigs.map(config => `
+                    <div class="container" id="container-${config.lote}" data-lote="${config.lote}" style="border: 3px solid ${config.color}; background: rgba(0,0,0,0.02);">
+                        <div class="container-label" style="background: ${config.color}; color: white; font-weight: bold; padding: 10px; margin: -3px -3px 10px -3px; border-radius: 8px 8px 0 0;">
+                            ${config.emoji} ${config.lote}: ${config.name}<br><small>Productos terminados en: -${config.suffix}</small>
+                        </div>
+                        <div class="container-items" id="items-${config.lote}"></div>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('[data-lote]').forEach(container => { container.addEventListener('dragover', (e)=>this.handleDragOver(e)); container.addEventListener('drop',(e)=>this.handleDropProcessing(e)); container.addEventListener('dragleave',(e)=>this.handleDragLeave(e)); });
+
+                // Iniciar tick para simular cinta y velocidad progresiva
+                this.startProcessingTicker();
+            },
+
+            // ticker para items en la cinta que expiran si no se procesan
+            startProcessingTicker() {
+                if (this.processingTicker) clearInterval(this.processingTicker);
+                // tiempo base y se reduce progresivamente
+                this.processingTicker = setInterval(()=>{
+                    // reducir tiempo de cada ítem no colocado
+                    this.processingItems.forEach(item => {
+                        if (item.placed) return;
+                        item.timeRemaining -= 1;
+                        const el = document.querySelector(`[data-item="${item.id}"]`);
+                        if (el) {
+                            // Sin movimiento: solo mostrar tiempo restante
+                            el.title = `Tiempo restante: ${item.timeRemaining}s`;
+                            // Cambiar color según tiempo
+                            if (item.timeRemaining <= 2) el.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                            else if (item.timeRemaining <= 4) el.style.background = 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)';
+                        }
+                        if (item.timeRemaining <= 0 && !item.placed) {
+                            item.placed = true; // marcar como perdido
+                            this.applyPenalty(7, `Ítem perdido: ${item.id} (${item.sku})`);
+                            // atenuar visual
+                            if (el) el.style.opacity = '0.2';
+                        }
+                    });
+                }, 1000);
+            },
+
+            handleDropProcessing(e) {
+                e.preventDefault();
+                const zone = e.currentTarget;
+                zone.classList.remove('drag-over');
+
+                const itemId = e.dataTransfer.getData('id');
+                const lote = zone.dataset.lote;
+                const item = this.processingItems.find(i=>i.id===itemId);
+                if (!item) return;
+
+                // Determinar lote correcto por terminación SKU
+                const suffix = item.sku.split('-').pop();
+                const correctLote = suffix === 'M' ? 'LOTE-1' : (suffix === 'G' ? 'LOTE-2' : 'LOTE-3');
+
+                if (lote !== correctLote) {
+                    // mal clasificado
+                    this.applyPenalty(10, `Ítem mal clasificado: ${item.id} (${item.sku}) en ${lote}`);
+                } else {
+                    // OK - guardar en contenedor y en array de productos procesados
+                    this.containers[lote].push(item.id);
+                    this.processedProducts.push(item.id); // ★ IMPORTANTE: guardar producto correcto
+                }
+
+                item.placed = true; // procesado (bien o mal)
+                const itemsContainer = document.getElementById(`items-${lote}`);
+                const itemElement = document.createElement('div');
+                itemElement.className = 'container-item';
+                itemElement.textContent = `${item.id} (${item.sku})`;
+                itemsContainer.appendChild(itemElement);
+
+                const processingElement = document.querySelector(`[data-item="${itemId}"]`);
+                if (processingElement) processingElement.style.opacity = '0.5';
+
+                console.log(`[Processing] Item ${item.id} colocado en ${lote}. Estado: ${lote === correctLote ? 'CORRECTO' : 'INCORRECTO'}`);
+                this.gameHistory.push({ stage: 'processing', action: 'item_placed', data: { item: item.id, lote, correct: lote === correctLote } });
+            },
+
+            proceedProcessing() {
+                if (this.processingTicker) clearInterval(this.processingTicker);
+                const unprocessed = this.processingItems.filter(i=>!i.placed);
+                const feedback = { stage:'processing', placed: this.processingItems.filter(i=>i.placed).length, total: this.processingItems.length, scoreChange:0, items:[] };
+                if (unprocessed.length>0) {
+                    const penalty = 7 * unprocessed.length;
+                    this.applyPenalty(penalty, `${unprocessed.length} ítem(s) no procesado(s)`);
+                    feedback.items.push({ type: 'negative', text: `❌ ${unprocessed.length} ítem(s) no procesados`});
+                } else {
+                    feedback.items.push({ type: 'positive', text: `✓ Todos los ítems procesados`});
+                }
+                // Resumen por lotes
+                Object.entries(this.containers).forEach(([lote, items])=>{ feedback.items.push({ type:'positive', text: `📦 ${lote}: ${items.length} ítem(s)` }); });
+
+                this.showPhaseFeedback(feedback, ()=>{
+                    this.currentPhase = 'distribution';
+                    this.showPhaseIntro();
+                });
+            },
+
+            setupDistributionObservation() {
+                // Reinicializar asignaciones para esta fase
+                this.distributionAssignments = {};
+                
+                // Centros de distribución con características de refrigeración
+                this.distributionCenters = [
+                    {name: 'Centro A', demand: '500kg', temp: '-18°C', backup: true, status: '✓ Óptimo'},
+                    {name: 'Centro B', demand: '750kg', temp: '-15°C', backup: false, status: '⚠️ Regular'},
+                    {name: 'Centro C', demand: '300kg', temp: '-20°C', backup: true, status: '✓ Óptimo'},
+                    {name: 'Centro D', demand: '600kg', temp: '-12°C', backup: false, status: '❌ Crítico'},
+                    {name: 'Centro E', demand: '400kg', temp: '-18°C', backup: true, status: '✓ Óptimo'},
+                    {name: 'Centro F', demand: '550kg', temp: '-17°C', backup: true, status: '✓ Óptimo'}
+                ];
+
+                const cardsDiv = document.getElementById('distributionObservationCards');
+                cardsDiv.innerHTML = this.distributionCenters.map((center, idx) => `
+                    <div class="distribution-card" style="border-left: 4px solid ${center.temp < '-18' ? '#10b981' : center.temp < '-15' ? '#f59e0b' : '#ef4444'}">
+                        <div class="city-name">${center.name}</div>
+                        <div class="demand-info">Demanda: ${center.demand}</div>
+                        <div style="font-size: 14px; color: #666;">
+                            <div>❄️ Temperatura: ${center.temp}</div>
+                            <div>🔋 Respaldo: ${center.backup ? '✓ Sí' : '✗ No'}</div>
+                            <div>Estado: ${center.status}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                this.startTimer(10, () => {
+                    this.setupDistributionDecision();
+                    this.goToScreen('distributionDecisionScreen');
+                }, 'distributionObservationTimer');
+            },
+
+            setupDistributionDecision() {
+                // Reinicializar productos asignados
+                this.assignedDistributionProducts = new Set();
+                
+                const cardsDiv = document.getElementById('distributionCards');
+                cardsDiv.innerHTML = this.distributionCenters.map((center, idx) => `
+                    <div class="distribution-card">
+                        <div class="city-name">${center.name}</div>
+                        <div class="demand-info">Demanda: ${center.demand}</div>
+                        <div style="font-size: 12px; margin: 5px 0; color: #666;">
+                            🌡️ ${center.temp} | 🔋 ${center.backup ? 'Sí' : 'No'} | ${center.status}
+                        </div>
+                        <div class="drop-target" id="target-${center.name}" data-city="${center.name}">
+                            Arrastra productos aquí
+                            <div class="target-items" id="items-${center.name}"></div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('[data-city]').forEach(target => {
+                    target.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    target.addEventListener('drop', (e) => this.handleDropDistribution(e));
+                    target.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                });
+
+                const itemsContainer = document.createElement('div');
+                itemsContainer.id = 'distributionProductsContainer';
+                itemsContainer.style.marginTop = '30px';
+                itemsContainer.style.padding = '20px';
+                itemsContainer.style.background = 'white';
+                itemsContainer.style.borderRadius = '15px';
+                itemsContainer.innerHTML = '<h3 style="margin-bottom: 15px; color: #333;">Productos a Distribuir</h3>';
+
+                const productsDiv = document.createElement('div');
+                productsDiv.id = 'distributionProductsList';
+                productsDiv.style.display = 'flex';
+                productsDiv.style.flexWrap = 'wrap';
+                productsDiv.style.gap = '10px';
+
+                // ★ IMPORTANTE: usar this.processedProducts (productos clasificados correctamente)
+                this.processedProducts.forEach(itemId => {
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    item.id = `dist-product-${itemId}`;
+                    item.style.background = 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)';
+                    item.draggable = true;
+                    item.dataset.item = itemId;
+                    item.textContent = itemId;
+
+                    item.addEventListener('dragstart', (e) => {
+                        this.handleDragStart(e, 'product', itemId);
+                    });
+
+                    productsDiv.appendChild(item);
+                });
+
+                itemsContainer.appendChild(productsDiv);
+                
+                // Remover contenedor anterior si existe
+                const oldContainer = document.getElementById('distributionProductsContainer');
+                if (oldContainer) oldContainer.remove();
+                
+                document.getElementById('distributionDecisionScreen').appendChild(itemsContainer);
+                console.log(`[Distribution Decision] ${this.processedProducts.length} productos disponibles para distribuir`);
+            },
+
+            handleDropDistribution(e) {
+                e.preventDefault();
+                const target = e.currentTarget;
+                target.classList.remove('drag-over');
+
+                const itemId = e.dataTransfer.getData('id');
+                const city = target.dataset.city;
+
+                // Evitar asignar el mismo producto múltiples veces
+                if (this.assignedDistributionProducts.has(itemId)) {
+                    alert(`⚠️ El producto ${itemId} ya fue asignado a otro centro`);
+                    return;
+                }
+
+                if (!this.distributionAssignments[city]) {
+                    this.distributionAssignments[city] = [];
+                }
+                this.distributionAssignments[city].push(itemId);
+                this.assignedDistributionProducts.add(itemId);
+                target.classList.add('has-items');
+
+                const itemsDiv = document.getElementById(`items-${city}`);
+                const itemElement = document.createElement('div');
+                itemElement.className = 'target-item';
+                itemElement.textContent = itemId;
+                itemsDiv.appendChild(itemElement);
+
+                // REMOVER el producto de la lista disponible
+                const productElement = document.getElementById(`dist-product-${itemId}`);
+                if (productElement) {
+                    productElement.style.opacity = '0.3';
+                    productElement.draggable = false;
+                    productElement.style.cursor = 'not-allowed';
+                    productElement.title = 'Ya fue asignado a ' + city;
+                }
+
+                this.gameHistory.push({
+                    stage: 'distribution',
+                    action: 'product_assigned',
+                    data: {product: itemId, city: city}
+                });
+            },
+
+            proceedDistribution() {
+                // ★ IMPORTANTE: usar this.processedProducts (productos correctamente clasificados)
+                const totalProducts = this.processedProducts.length;
+                const distributedProducts = Object.values(this.distributionAssignments).flat().length;
+
+                const feedback = {
+                    stage: 'distribution',
+                    distributed: distributedProducts,
+                    total: totalProducts,
+                    scoreChange: 0,
+                    items: []
+                };
+
+                if (distributedProducts < totalProducts * 0.8) {
+                    const penalty = 8;
+                    this.applyPenalty(penalty, 'Distribución incompleta');
+                    feedback.scoreChange -= penalty;
+                    feedback.items.push({
+                        type: 'negative',
+                        text: `❌ Distribución incompleta: ${distributedProducts}/${totalProducts} productos`
+                    });
+                } else {
+                    feedback.items.push({
+                        type: 'positive',
+                        text: `✓ Distribución exitosa: ${distributedProducts}/${totalProducts} productos`
+                    });
+                }
+
+                Object.entries(this.distributionAssignments).forEach(([city, items]) => {
+                    feedback.items.push({
+                        type: 'positive',
+                        text: `📍 ${city}: ${items.length} producto(s) entregado(s)`
+                    });
+                });
+                console.log(`[Distribution] Total: ${totalProducts}, Distribuidos: ${distributedProducts}`);
+                console.log(`[Distribution] Productos procesados:`, this.processedProducts);
+                console.log(`[Distribution] Asignaciones:`, this.distributionAssignments);
+
+                this.showPhaseFeedback(feedback, () => {
+                    this.currentPhase = 'retail';
+                    this.showPhaseIntro();
+                });
+            },
+
+            setupRetailScreen() {
+                const shelfDiv = document.getElementById('shelf');
+                shelfDiv.innerHTML = '';
+
+                // Estantes con características de trazabilidad y temperatura
+                this.retailShelfSpecs = [
+                    {id: 'slot-0', name: 'Estante Premium', temp: 'Controlada', qrRequired: true},
+                    {id: 'slot-1', name: 'Estante Estándar', temp: 'Ambiente', qrRequired: false},
+                    {id: 'slot-2', name: 'Estante Premium', temp: 'Controlada', qrRequired: true},
+                    {id: 'slot-3', name: 'Estante Estándar', temp: 'Ambiente', qrRequired: false},
+                    {id: 'slot-4', name: 'Estante Frío', temp: 'Refrigerado', qrRequired: true},
+                    {id: 'slot-5', name: 'Estante Frío', temp: 'Refrigerado', qrRequired: true}
+                ];
+
+                for (let i = 0; i < 6; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'shelf-slot';
+                    slot.id = `slot-${i}`;
+                    slot.dataset.slot = `slot-${i}`;
+                    const spec = this.retailShelfSpecs[i];
+                    slot.innerHTML = `
+                        <div style="font-weight: bold;">${spec.name}</div>
+                        <div style="font-size: 12px; margin: 5px 0; color: #666;">
+                            🌡️ ${spec.temp} | ${spec.qrRequired ? '📱 QR Requerido' : ''}
+                        </div>
+                    `;
+
+                    slot.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    slot.addEventListener('drop', (e) => this.handleDropShelf(e));
+                    slot.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+
+                    shelfDiv.appendChild(slot);
+                }
+
+                const productsDiv = document.getElementById('productsList');
+                productsDiv.innerHTML = '';
+
+                Object.entries(this.distributionAssignments).forEach(([city, items]) => {
+                    items.forEach(itemId => {
+                        const item = document.createElement('div');
+                        item.className = 'item';
+                        item.style.background = 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)';
+                        item.draggable = true;
+                        item.dataset.item = itemId;
+                        item.style.cursor = 'grab';
+                        item.textContent = `🥩 ${itemId}`;
+
+                        item.addEventListener('dragstart', (e) => {
+                            this.handleDragStart(e, 'shelfitem', itemId);
+                        });
+
+                        productsDiv.appendChild(item);
+                    });
+                });
+            },
+
+            handleDropShelf(e) {
+                e.preventDefault();
+                const slot = e.currentTarget;
+                slot.classList.remove('drag-over');
+
+                const itemId = e.dataTransfer.getData('id');
+                const slotId = slot.dataset.slot;
+                const slotIndex = parseInt(slotId.split('-')[1]);
+                const spec = this.retailShelfSpecs[slotIndex];
+
+                if (!this.retailShelfItems[slotId]) {
+                    this.retailShelfItems[slotId] = {itemId, qrScanned: false};
+                    slot.classList.add('occupied');
+                    slot.innerHTML = `
+                        <div style="font-weight: bold;">${spec.name}</div>
+                        <div style="font-size: 12px; margin: 5px 0; color: #666;">
+                            🌡️ ${spec.temp} | ${spec.qrRequired ? '📱 QR Requerido' : ''}
+                        </div>
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                            🥩 ${itemId}
+                        </div>
+                    `;
+                    slot.dataset.item = itemId;
+
+                    const item = document.querySelector(`[data-item="${itemId}"]`);
+                    if (item) item.style.opacity = '0.5';
+
+                    this.gameHistory.push({
+                        stage: 'retail',
+                        action: 'product_placed',
+                        data: {product: itemId, slot: slotId, qrRequired: spec.qrRequired}
+                    });
+                }
+            },
+
+            activateQR() {
+                // Evitar múltiples escaneos - una sola vez por fase
+                if (this.qrActivated) {
+                    alert('✓ QR ya fue escaneado en esta fase');
+                    return;
+                }
+
+                if (Object.keys(this.retailShelfItems).length === 0) {
+                    alert('Primero coloca productos en los estantes');
+                    return;
+                }
+
+                // Verificar QR SOLO en estantes que tienen PRODUCTOS Y requieren QR
+                let missingQR = false;
+                let verifiedQR = 0;
+                let productsWithQRRequired = 0;
+
+                Object.entries(this.retailShelfItems).forEach(([slotId, data]) => {
+                    const slotIndex = parseInt(slotId.split('-')[1]);
+                    const spec = this.retailShelfSpecs[slotIndex];
+                    
+                    // Solo importa si el estante requiere QR Y tiene un producto
+                    if (spec.qrRequired && data.itemId) {
+                        productsWithQRRequired++;
+                        if (!data.qrScanned) {
+                            // Marcar como escaneado - primera y única penalización
+                            data.qrScanned = true;
+                            verifiedQR++;
+                        } else {
+                            verifiedQR++;
+                        }
+                    }
+                });
+
+                // Si hay productos en estantes que requieren QR pero no estaban escaneados
+                if (productsWithQRRequired > 0 && productsWithQRRequired === verifiedQR) {
+                    // Éxito: todos los productos en estantes con QR fueron verificados
+                    this.qrActivated = true;
+                    const btn = document.getElementById('qrButton');
+                    btn.textContent = '✓ QR Activado';
+                    btn.disabled = true;
+                    btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+
+                    this.gameHistory.push({
+                        stage: 'retail',
+                        action: 'qr_activated',
+                        data: {productsVerified: verifiedQR}
+                    });
+
+                    console.log(`[QR] ${verifiedQR} productos verificados con éxito`);
+                } else {
+                    alert(`⚠️ No hay productos en estantes que requieran QR, o algunos no fueron verificados.\nProductos con QR: ${productsWithQRRequired}`);
+                }
+            },
+
+            proceedRetail() {
+                const feedback = {
+                    stage: 'retail',
+                    shelfItems: Object.keys(this.retailShelfItems).length,
+                    scoreChange: 0,
+                    items: []
+                };
+
+                // Verificar QR - penalizar solo si NO fue activado
+                if (!this.qrActivated) {
+                    const penalty = 12;
+                    this.applyPenalty(penalty, 'Cliente recibe sin trazabilidad verificada');
+                    feedback.scoreChange -= penalty;
+                    feedback.items.push({
+                        type: 'negative',
+                        text: `❌ QR de trazabilidad no fue activado - Cliente recibe sin verificación`
+                    });
+                } else {
+                    feedback.items.push({
+                        type: 'positive',
+                        text: `✓ QR de trazabilidad activado correctamente`
+                    });
+                    feedback.items.push({
+                        type: 'positive',
+                        text: `✓ Cliente recibe producto con trazabilidad verificada`
+                    });
+                }
+
+                // Verificar si todos los productos fueron ubicados
+                const unplaced = Object.values(this.distributionAssignments).flat().length - Object.keys(this.retailShelfItems).length;
+                if (unplaced > 0) {
+                    const penalty = 5 * unplaced;
+                    this.applyPenalty(penalty, `${unplaced} producto(s) no ubicado(s)`);
+                    feedback.scoreChange -= penalty;
+                    feedback.items.push({
+                        type: 'negative',
+                        text: `❌ ${unplaced} producto(s) no fueron ubicados en estantes`
+                    });
+                } else {
+                    feedback.items.push({
+                        type: 'positive',
+                        text: `✓ Todos los productos fueron ubicados correctamente en estantes`
+                    });
+                }
+
+                this.showPhaseFeedback(feedback, () => {
+                    this.setupResultScreen();
+                    this.goToScreen('resultScreen');
+                });
+            },
+
+            setupResultScreen() {
+                const percentage = this.currentScore;
+                document.getElementById('resultPercentage').textContent = `${percentage}%`;
+
+                let message = '';
+                let submessage = '';
+
+                if (percentage === 100) {
+                    message = '🏆 ¡Excelente Desempeño!';
+                    submessage = 'Mantuviste la trazabilidad perfecta en todo el proceso.';
+                } else if (percentage >= 90) {
+                    message = '👍 ¡Muy Buen Trabajo!';
+                    submessage = 'La trazabilidad fue casi perfecta con mínimos errores.';
+                } else if (percentage >= 80) {
+                    message = '📊 Buen Desempeño';
+                    submessage = 'Completaste el proceso correctamente pero con algunos errores.';
+                } else if (percentage >= 60) {
+                    message = '⚠️ Desempeño Regular';
+                    submessage = 'Hay múltiples puntos de mejora en la trazabilidad.';
+                } else {
+                    message = '❌ Desempeño Bajo';
+                    submessage = 'La trazabilidad se vio significativamente comprometida.';
+                }
+
+                document.getElementById('resultMessage').textContent = message;
+                document.getElementById('resultSubmessage').textContent = submessage;
+
+                const timelineDiv = document.getElementById('resultTimeline');
+                timelineDiv.innerHTML = `
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🚜</div>
+                        <div class="timeline-content">
+                            <div class="timeline-stage">Origen - La Granja</div>
+                            <div class="timeline-description">
+                                Se registraron ${this.registeredCows.length} vacas de ${this.cows.length} disponibles
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🚚</div>
+                        <div class="timeline-content">
+                            <div class="timeline-stage">Transporte</div>
+                            <div class="timeline-description">
+                                Se asignaron camiones a rutas con ${Object.keys(this.assignments).length} rutas cubiertas
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🏭</div>
+                        <div class="timeline-content">
+                            <div class="timeline-stage">Procesamiento</div>
+                            <div class="timeline-description">
+                                ${this.processingItems.filter(i => i.placed).length} de ${this.processingItems.length} productos clasificados
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">📦</div>
+                        <div class="timeline-content">
+                            <div class="timeline-stage">Distribución</div>
+                            <div class="timeline-description">
+                                Productos distribuidos a ${Object.keys(this.distributionAssignments).length} ciudades
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🛒</div>
+                        <div class="timeline-content">
+                            <div class="timeline-stage">Punto de Venta</div>
+                            <div class="timeline-description">
+                                ${Object.keys(this.retailShelfItems).length} productos en estante - QR: ${this.qrActivated ? '✓ Activado' : '✗ No activado'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (this.errors.length > 0) {
+                    const errorsDiv = document.createElement('div');
+                    errorsDiv.className = 'errors-section';
+                    errorsDiv.innerHTML = `
+                        <div class="errors-title">📋 Errores Registrados (${this.errors.length})</div>
+                        ${this.errors.map(err => `
+                            <div class="error-item">
+                                ${err.description}
+                                <span class="error-penalty">-${err.penalty}%</span>
+                            </div>
+                        `).join('')}
+                    `;
+                    timelineDiv.parentElement.insertBefore(errorsDiv, timelineDiv.nextSibling);
+                } else {
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'errors-section no-errors';
+                    successDiv.innerHTML = `
+                        <div class="errors-title">✓ ¡Sin errores! Trazabilidad perfecta</div>
+                    `;
+                    timelineDiv.parentElement.insertBefore(successDiv, timelineDiv.nextSibling);
+                }
+            },
+
+            applyPenalty(penalty, description) {
+                this.currentScore = Math.max(0, this.currentScore - penalty);
+                this.errors.push({description, penalty});
+                this.updateScore();
+            },
+
+            updateScore() {
+                document.getElementById('scoreValue').textContent = `${this.currentScore}%`;
+                const fill = document.getElementById('progressFill');
+                fill.style.width = `${this.currentScore}%`;
+
+                if (this.currentScore < 30) {
+                    document.getElementById('scoreValue').classList.add('critical');
+                }
+            },
+
+            startTimer(seconds, callback, elementId) {
+                let remaining = seconds;
+                const element = document.getElementById(elementId);
+
+                const interval = setInterval(() => {
+                    remaining--;
+                    if (element) {
+                        element.textContent = `${remaining}s`;
+                    }
+
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        callback();
+                    }
+                }, 1000);
+            },
+
+            goToScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => {
+                    s.classList.remove('active');
+                });
+                document.getElementById(screenId).classList.add('active');
+                this.currentScreen = screenId;
+                window.scrollTo(0, 0);
+            },
+
+            restart() {
+                this.startGame();
+            },
+
+            shareResult() {
+                const message = `🐄 Del Campo al Plato - ¡Obtuve ${this.currentScore}% de Trazabilidad! 
+                
+Desafía tus habilidades en logística y trazabilidad alimentaria. 
+🎮 Juega ahora: [URL]`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Del Campo al Plato',
+                        text: message,
+                    });
+                } else {
+                    alert('Resultado: ' + this.currentScore + '% de Trazabilidad\n' + message);
+                }
+            },
+
+            setupDragAndDrop() {
+                document.addEventListener('dragend', (e) => {
+                    document.querySelectorAll('.dragging').forEach(el => {
+                        el.classList.remove('dragging');
+                    });
+                });
+            }
+        };
+
+        // Hacer accesible 'app' desde el contexto global para handlers inline
+        try { window.app = app; } catch (e) { /* ignore */ }
+
+        // Inicializar cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
