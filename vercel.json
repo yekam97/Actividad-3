@@ -2,7 +2,7 @@
   "buildCommand": "npm run build || true",
   "outputDirectory": "./",
   "public": false,
-  "env": [],
+  "env": {},
   "functions": {},
   "regions": ["iad1"]
 }
