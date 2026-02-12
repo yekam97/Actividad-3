@@ -214,12 +214,7 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
-        .farm-title {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+        .farm-title { font-size: 20px; color: #333; margin-bottom: 20px; font-weight: 600; }
 
         .cows-container {
             display: flex;
@@ -1245,6 +1240,46 @@
                 font-size: 48px;
             }
         }
+    </style>
+    <!-- Override styles: professional theme + red accent -->
+    <style>
+        :root{ --accent: #d64b22; --accent-dark:#b23e1a; --muted:#6b7280; --bg:#f6f7f8; --card:#ffffff; --text:#1f2937; --success:#16a34a }
+
+        body{ background:var(--bg) !important; color:var(--text) !important; font-family: Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial !important }
+
+        /* Header */
+        .header{ background:var(--card) !important; border-bottom:1px solid #e6e6e6 !important }
+        .header h1{ color:var(--text) !important; font-weight:700 !important }
+
+        /* Buttons */
+        .btn-primary{ background:linear-gradient(180deg,var(--accent),var(--accent-dark)) !important; border-radius:8px !important; padding:10px 20px !important; box-shadow:0 6px 18px rgba(16,24,32,0.06) !important }
+        .btn-primary:hover{ transform:translateY(-3px) !important }
+
+        /* Progress fill uses accent */
+        .progress-fill{ background:linear-gradient(90deg,var(--accent),var(--accent-dark)) !important }
+
+        /* Timers & warnings use accent color */
+        .timer, .score-value.critical, .errors-title, .error-penalty{ color:var(--accent) !important }
+
+        /* Cards and inputs subtle neutral look */
+        .card, .farm-section, .registration-zone, .drop-zone, .drop-target, .shelf-section{ background:var(--card) !important; border-radius:12px !important; box-shadow:0 8px 24px rgba(16,24,32,0.04) !important }
+        input, select{ border:1px solid #e6e6e6 !important }
+        input:focus, select:focus{ border-color:var(--accent) !important; box-shadow:0 0 0 6px rgba(214,75,34,0.06) !important }
+
+        /* Accent for small UI elements */
+        .zone-label, .phase-indicator { color:var(--accent) !important; border-color:var(--accent) !important }
+
+        /* Make badges and tags more subtle/professional */
+        .registered-cow, .container-item, .target-item{ border-radius:10px !important; padding:6px 10px !important }
+
+        /* Reduce overly saturated gradients from original styles */
+        .processing-item, .cow { background: linear-gradient(180deg,#fff5f2,var(--accent)) !important; color:var(--text) !important }
+
+        /* Feedback modal accent */
+        .phase-feedback-content{ border-radius:12px !important }
+        .feedback-score{ color:var(--accent) !important }
+
+        @media (max-width:768px){ .intro-title{ font-size:28px !important } }
     </style>
 </head>
 <body>
