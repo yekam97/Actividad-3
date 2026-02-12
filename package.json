@@ -1,0 +1,22 @@
+{
+  "name": "del-campo-al-plato",
+  "version": "1.0.0",
+  "description": "Experiencia gamificada: Del Campo al Plato",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server",
+    "dev": "npx http-server -p 8000"
+  },
+  "keywords": [
+    "gamification",
+    "education",
+    "supply-chain",
+    "meat-traceability"
+  ],
+  "author": "Yeison Gamba",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yekam97/Actividad-3.git"
+  }
+}
